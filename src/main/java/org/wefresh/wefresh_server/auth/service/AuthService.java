@@ -16,10 +16,7 @@ import org.wefresh.wefresh_server.user.domain.Provider;
 import org.wefresh.wefresh_server.user.domain.Token;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.dto.response.UserTokenDto;
-import org.wefresh.wefresh_server.user.manager.TokenRetriever;
-import org.wefresh.wefresh_server.user.manager.TokenSaver;
-import org.wefresh.wefresh_server.user.manager.UserRetriever;
-import org.wefresh.wefresh_server.user.manager.UserSaver;
+import org.wefresh.wefresh_server.user.manager.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +32,7 @@ public class AuthService {
 
     private final TokenSaver tokenSaver;
     private final TokenRetriever tokenRetriever;
+    private final TokenRemover tokenRemover;
 
     @Transactional
     public UserTokenDto signin(final UserLoginDto userLoginDto) {
@@ -43,6 +41,11 @@ public class AuthService {
         JwtTokenDto tokens = jwtTokenProvider.issueTokens(user.getId());
         saveToken(user.getId(), tokens);
         return UserTokenDto.of(user, tokens);
+    }
+
+    @Transactional
+    public void signout(final Long userId) {
+        tokenRemover.removeById(userId);
     }
 
     @Transactional

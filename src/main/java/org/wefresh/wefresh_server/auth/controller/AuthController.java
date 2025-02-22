@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wefresh.wefresh_server.auth.dto.request.UserLoginDto;
 import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
 import org.wefresh.wefresh_server.auth.service.AuthService;
+import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.auth.constant.AuthConstant;
 import org.wefresh.wefresh_server.user.dto.response.UserTokenDto;
 
@@ -25,6 +26,14 @@ public class AuthController {
             @Valid @RequestBody final UserLoginDto userLoginDto
     ) {
         return ResponseEntity.ok(authService.signin(userLoginDto));
+    }
+
+    @PostMapping("/auth/signout")
+    public ResponseEntity<Void> signout(
+            @UserId final Long userId
+    ) {
+        authService.signout(userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/auth/reissue")
