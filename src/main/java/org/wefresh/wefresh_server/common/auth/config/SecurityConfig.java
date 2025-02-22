@@ -27,6 +27,7 @@ public class SecurityConfig {
     private static final String[] AUTH_WHITE_LIST = {
             "/test/**",
             "/actuator/health",
+            "/auth/signin",
     };
 
     @Bean
