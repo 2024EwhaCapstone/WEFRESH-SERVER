@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-@AuthenticationPrincipal(expression="T(org.kkumulkkum.server.common.auth.jwt.JwtTokenProvider).checkPrincipal(#this)")
+@AuthenticationPrincipal(expression="T(org.wefresh.wefresh_server.common.auth.jwt.JwtTokenProvider).checkPrincipal(#this)")
 public @interface UserId {
 }
