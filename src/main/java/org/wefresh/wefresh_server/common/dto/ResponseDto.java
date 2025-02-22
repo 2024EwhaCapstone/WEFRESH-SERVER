@@ -1,6 +1,7 @@
 package org.wefresh.wefresh_server.common.dto;
 
 import org.springframework.http.HttpStatus;
+import org.wefresh.wefresh_server.common.exception.code.DefaultErrorCode;
 
 public record ResponseDto<T> (
         boolean isSuccess,
@@ -18,8 +19,8 @@ public record ResponseDto<T> (
     }
 
     // 실패 응답
-    public static <T> ResponseDto<T> fail(ErrorDto errorCode) {
-        return new ResponseDto<>(false, null, ErrorDto.of(errorCode.code(), errorCode.message()));
+    public static <T> ResponseDto<T> fail(DefaultErrorCode errorCode) {
+        return new ResponseDto<>(false, null, ErrorDto.of(errorCode.getHttpStatus().value(), errorCode.getMessage()));
     }
 
     public static <T> ResponseDto<T> validFail(String errorMessage) {
