@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.RequestCac
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.wefresh.wefresh_server.common.auth.filter.JwtAuthenticationFilter;
+import org.wefresh.wefresh_server.common.auth.filter.JwtExceptionFilter;
 import org.wefresh.wefresh_server.common.auth.handler.CustomAccessDeniedHandler;
 import org.wefresh.wefresh_server.common.auth.handler.CustomJwtAuthenticationEntryPoint;
 
@@ -19,11 +20,12 @@ import org.wefresh.wefresh_server.common.auth.handler.CustomJwtAuthenticationEnt
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtExceptionFilter jwtExceptionFilter;
     private final CustomJwtAuthenticationEntryPoint customJwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private static final String[] AUTH_WHITE_LIST = {
-            "/v1/test/**",
+            "/test/**",
             "/actuator/health",
     };
 
@@ -45,7 +47,8 @@ public class SecurityConfig {
                     auth.requestMatchers(AUTH_WHITE_LIST).permitAll();
                     auth.anyRequest().authenticated();
                 })
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
