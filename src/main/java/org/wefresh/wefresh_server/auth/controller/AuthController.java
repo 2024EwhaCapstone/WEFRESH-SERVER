@@ -13,6 +13,7 @@ import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
 import org.wefresh.wefresh_server.auth.service.AuthService;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.auth.constant.AuthConstant;
+import org.wefresh.wefresh_server.common.dto.ResponseDto;
 import org.wefresh.wefresh_server.user.dto.response.UserTokenDto;
 
 @RestController
@@ -22,25 +23,25 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/auth/signin")
-    public ResponseEntity<UserTokenDto> signin(
+    public ResponseEntity<ResponseDto<UserTokenDto>> signin(
             @Valid @RequestBody final UserLoginDto userLoginDto
     ) {
-        return ResponseEntity.ok(authService.signin(userLoginDto));
+        return ResponseEntity.ok().body(ResponseDto.success(authService.signin(userLoginDto)));
     }
 
     @PostMapping("/auth/signout")
-    public ResponseEntity<Void> signout(
+    public ResponseEntity<ResponseDto<Void>> signout(
             @UserId final Long userId
     ) {
         authService.signout(userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ResponseDto.success());
     }
 
     @PostMapping("/auth/reissue")
-    public ResponseEntity<JwtTokenDto> reissue(
+    public ResponseEntity<ResponseDto<JwtTokenDto>> reissue(
             @NotBlank @RequestHeader(AuthConstant.AUTHORIZATION_HEADER) final String refreshToken
     ) {
-        return ResponseEntity.ok(authService.reissue(refreshToken));
+        return ResponseEntity.ok().body(ResponseDto.success(authService.reissue(refreshToken)));
     }
 
 }
