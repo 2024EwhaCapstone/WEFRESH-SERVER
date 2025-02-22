@@ -16,6 +16,7 @@ import org.wefresh.wefresh_server.user.domain.Provider;
 import org.wefresh.wefresh_server.user.domain.Token;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.dto.response.UserTokenDto;
+import org.wefresh.wefresh_server.user.manager.TokenRetriever;
 import org.wefresh.wefresh_server.user.manager.TokenSaver;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 import org.wefresh.wefresh_server.user.manager.UserSaver;
@@ -33,6 +34,7 @@ public class AuthService {
     private final UserRetriever userRetriever;
 
     private final TokenSaver tokenSaver;
+    private final TokenRetriever tokenRetriever;
 
     @Transactional
     public UserTokenDto signin(final UserLoginDto userLoginDto) {
@@ -41,6 +43,25 @@ public class AuthService {
         JwtTokenDto tokens = jwtTokenProvider.issueTokens(user.getId());
         saveToken(user.getId(), tokens);
         return UserTokenDto.of(user, tokens);
+    }
+
+    @Transactional
+    public JwtTokenDto reissue(final String refreshToken) {
+        Long userId;
+        try{
+            userId = jwtTokenProvider.getUserIdFromJwt(refreshToken);
+        } catch (Exception e) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
+        Token token = tokenRetriever.findByRefreshToken(refreshToken);
+
+        if(!userId.equals(token.getId())) {
+            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
+        }
+
+        JwtTokenDto tokens = jwtTokenProvider.issueTokens(userId);
+        saveToken(userId, tokens);
+        return tokens;
     }
 
     private SocialUserDto getSocialInfo(final UserLoginDto userLoginDto) {
