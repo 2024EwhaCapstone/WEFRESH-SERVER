@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.wefresh.wefresh_server.auth.dto.JwtTokenDto;
+import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
 import org.wefresh.wefresh_server.common.auth.jwt.JwtTokenProvider;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
 import org.wefresh.wefresh_server.common.exception.BusinessException;

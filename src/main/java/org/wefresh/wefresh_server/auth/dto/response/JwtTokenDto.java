@@ -1,4 +1,4 @@
-package org.wefresh.wefresh_server.auth.dto;
+package org.wefresh.wefresh_server.auth.dto.response;
 
 import lombok.AccessLevel;
 import lombok.Builder;

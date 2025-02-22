@@ -7,7 +7,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum AuthErrorCode implements DefaultErrorCode {
+    // 400 Bad Request
+    INVALID_PROVIDER(HttpStatus.BAD_REQUEST, "유효하지 않은 소셜 플랫폼입니다."),
 
+    // 401 UNAUTHORIZED
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"인증되지 않은 사용자입니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"액세스 토큰의 형식이 올바르지 않습니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED,"액세스 토큰이 만료되었습니다."),
