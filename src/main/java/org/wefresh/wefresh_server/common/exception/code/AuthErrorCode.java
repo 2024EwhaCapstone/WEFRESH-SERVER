@@ -14,6 +14,7 @@ public enum AuthErrorCode implements DefaultErrorCode {
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED,"지원하지 않는 토큰 형식입니다."),
     EMPTY_TOKEN(HttpStatus.UNAUTHORIZED,"토큰이 제공되지 않았습니다."),
     MISMATCH_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"리프레시 토큰이 일치하지 않습니다."),
+    UNKNOWN_TOKEN(HttpStatus.UNAUTHORIZED, "알 수 없는 토큰입니다."),
     ;
 
     private HttpStatus httpStatus;
