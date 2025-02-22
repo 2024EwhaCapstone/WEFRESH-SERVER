@@ -28,6 +28,7 @@ public class SecurityConfig {
             "/test/**",
             "/actuator/health",
             "/auth/signin",
+            "/auth/reissue",
     };
 
     @Bean
