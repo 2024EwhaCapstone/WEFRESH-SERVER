@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.wefresh.wefresh_server.auth.dto.JwtTokenDto;
+import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
 import org.wefresh.wefresh_server.common.auth.constant.AuthConstant;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.AuthErrorCode;
