@@ -25,7 +25,7 @@ public class TodayRecipe extends BaseTimeEntity {
 
     private int calorie;
 
-    private int like;
+    private int likeCount;
 
     private int difficulty;
 
@@ -40,13 +40,13 @@ public class TodayRecipe extends BaseTimeEntity {
     private User user;
 
     @Builder
-    public TodayRecipe(User user, String name, String image, int time, int calorie, int like, int difficulty, String ingredients, String recipe) {
+    public TodayRecipe(User user, String name, String image, int time, int calorie, int likeCount, int difficulty, String ingredients, String recipe) {
         this.user = user;
         this.name = name;
         this.image = image;
         this.time = time;
         this.calorie = calorie;
-        this.like = like;
+        this.likeCount = likeCount;
         this.difficulty = difficulty;
         this.ingredients = ingredients;
         this.recipe = recipe;
