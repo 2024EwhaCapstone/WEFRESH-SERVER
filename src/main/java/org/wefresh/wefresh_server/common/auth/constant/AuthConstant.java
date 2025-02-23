@@ -15,4 +15,10 @@ public class AuthConstant {
     public static final String KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
     public static final String KAKAO_URL = "https://kapi.kakao.com";
 
+    public static final String GRANT_TYPE = "KakaoAK ";
+    public static final String TARGET_ID_TYPE = "user_id";
+
+    // GOOGLE
+    public static final String GOOGLE_WITHDRAW_HEADER = "Google-Token";
+
 }
