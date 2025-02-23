@@ -7,11 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.auth.dto.SocialUserDto;
 import org.wefresh.wefresh_server.auth.dto.request.UserLoginDto;
 import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
+import org.wefresh.wefresh_server.bookmark.manager.BookmarkRemover;
 import org.wefresh.wefresh_server.common.auth.jwt.JwtTokenProvider;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.AuthErrorCode;
 import org.wefresh.wefresh_server.external.service.google.dto.GoogleTokenDto;
 import org.wefresh.wefresh_server.external.service.kakao.dto.KakaoTokenDto;
+import org.wefresh.wefresh_server.food.manager.FoodRemover;
+import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
+import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRemover;
 import org.wefresh.wefresh_server.user.domain.Provider;
 import org.wefresh.wefresh_server.user.domain.Token;
 import org.wefresh.wefresh_server.user.domain.User;
@@ -33,6 +37,11 @@ public class AuthService {
     private final TokenSaver tokenSaver;
     private final TokenRetriever tokenRetriever;
     private final TokenRemover tokenRemover;
+
+    private final BookmarkRemover bookmarkRemover;
+    private final FoodRemover foodRemover;
+    private final TodayRecipeRemover todayRecipeRemover;
+    private final UserRemover userRemover;
 
     @Transactional
     public UserTokenDto signin(final UserLoginDto userLoginDto) {
@@ -67,12 +76,28 @@ public class AuthService {
         return tokens;
     }
 
+    @Transactional
+    public void withdrawal(final Long userId, final String accessToken) {
+        User user = userRetriever.findById(userId);
+
+        if(user.getProvider() == Provider.KAKAO) {
+            kakaoService.unlinkKakaoUser(user.getProviderId());
+        } else if(user.getProvider() == Provider.GOOGLE) {
+            googleService.revoke(accessToken);
+        } else {
+            throw new BusinessException(AuthErrorCode.INVALID_PROVIDER);
+        }
+        deleteUser(user);
+    }
+
     private SocialUserDto getSocialInfo(final UserLoginDto userLoginDto) {
         if (userLoginDto.provider().toString().equals("KAKAO")){
             KakaoTokenDto kakaoTokenDto = kakaoService.getSocialToken(userLoginDto.code());
+            System.out.println("kakaoTokenDto.accessToken() = " + kakaoTokenDto.accessToken());
             return kakaoService.getSocialUserInfo(kakaoTokenDto.accessToken());
         } else if (userLoginDto.provider().toString().equals("GOOGLE")){
             GoogleTokenDto googleTokenDto = googleService.getSocialToken(userLoginDto.code());
+            System.out.println("googleTokenDto.accessToken() = " + googleTokenDto.accessToken());
             return googleService.getSocialUserInfo(googleTokenDto.accessToken());
         } else {
             throw new BusinessException(AuthErrorCode.INVALID_PROVIDER);
@@ -103,6 +128,14 @@ public class AuthService {
                         .refreshToken(tokens.refreshToken())
                         .build()
         );
+    }
+
+    private void deleteUser(final User user) {
+        bookmarkRemover.deleteByUserId(user.getId());
+        foodRemover.deleteByUserId(user.getId());
+        todayRecipeRemover.deleteByUserId(user.getId());
+
+        userRemover.deleteById(user.getId());
     }
 
 

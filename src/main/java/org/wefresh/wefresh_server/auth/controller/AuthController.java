@@ -1,13 +1,11 @@
 package org.wefresh.wefresh_server.auth.controller;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.wefresh.wefresh_server.auth.dto.request.UserLoginDto;
 import org.wefresh.wefresh_server.auth.dto.response.JwtTokenDto;
 import org.wefresh.wefresh_server.auth.service.AuthService;
@@ -42,6 +40,15 @@ public class AuthController {
             @NotBlank @RequestHeader(AuthConstant.AUTHORIZATION_HEADER) final String refreshToken
     ) {
         return ResponseEntity.ok().body(ResponseDto.success(authService.reissue(refreshToken)));
+    }
+
+    @DeleteMapping("/auth/withdrawal")
+    public ResponseEntity<ResponseDto<Void>> withdraw(
+            @UserId final Long userId,
+            @Nullable @RequestHeader(value = AuthConstant.GOOGLE_WITHDRAW_HEADER, required = false) final String accessToken
+    ) {
+        authService.withdrawal(userId, accessToken);
+        return ResponseEntity.ok().body(ResponseDto.success());
     }
 
 }

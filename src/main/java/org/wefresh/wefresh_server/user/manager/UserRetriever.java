@@ -22,4 +22,9 @@ public class UserRetriever {
         return userRepository.findByProviderIdAndProvider(providerId, provider)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.NOT_FOUND_USER));
     }
+
+    public User findById(final Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.NOT_FOUND_USER));
+    }
 }
