@@ -22,10 +22,18 @@ public class AuthController {
 
     @PostMapping("/auth/signin")
     public ResponseEntity<ResponseDto<UserTokenDto>> signin(
+            @NotBlank @RequestHeader(AuthConstant.AUTHORIZATION_HEADER) final String providerToken,
             @Valid @RequestBody final UserLoginDto userLoginDto
     ) {
-        return ResponseEntity.ok().body(ResponseDto.success(authService.signin(userLoginDto)));
+        return ResponseEntity.ok().body(ResponseDto.success(authService.signin(providerToken, userLoginDto)));
     }
+
+//    @PostMapping("/auth/signin")
+//    public ResponseEntity<ResponseDto<UserTokenDto>> signin(
+//            @Valid @RequestBody final UserLoginDto userLoginDto
+//    ) {
+//        return ResponseEntity.ok().body(ResponseDto.success(authService.signin(userLoginDto)));
+//    }
 
     @PostMapping("/auth/signout")
     public ResponseEntity<ResponseDto<Void>> signout(

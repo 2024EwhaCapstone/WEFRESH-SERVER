@@ -5,8 +5,8 @@ import org.wefresh.wefresh_server.user.domain.Provider;
 
 public record UserLoginDto(
         @NotNull
-        Provider provider,
-        @NotNull
-        String code
+        Provider provider
+//        @NotNull
+//        String code
 ) {
 }
