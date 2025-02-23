@@ -34,9 +34,9 @@ public class TestController {
     }
 
     @GetMapping("/test/token/{userId}")
-    public ResponseEntity<JwtTokenDto> testToken(
+    public ResponseEntity<ResponseDto<JwtTokenDto>> testToken(
             @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(jwtTokenProvider.issueTokens(userId));
+        return ResponseEntity.ok().body(ResponseDto.success(jwtTokenProvider.issueTokens(userId)));
     }
 }
