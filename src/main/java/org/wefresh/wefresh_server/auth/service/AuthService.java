@@ -44,8 +44,8 @@ public class AuthService {
     private final UserRemover userRemover;
 
     @Transactional
-    public UserTokenDto signin(final UserLoginDto userLoginDto) {
-        SocialUserDto socialUserDto = getSocialInfo(userLoginDto);
+    public UserTokenDto signin(final String providerToken, final UserLoginDto userLoginDto) {
+        SocialUserDto socialUserDto = getSocialInfo(providerToken, userLoginDto);
         User user = loadOrCreateUser(userLoginDto.provider(), socialUserDto);
         JwtTokenDto tokens = jwtTokenProvider.issueTokens(user.getId());
         saveToken(user.getId(), tokens);
@@ -90,15 +90,15 @@ public class AuthService {
         deleteUser(user);
     }
 
-    private SocialUserDto getSocialInfo(final UserLoginDto userLoginDto) {
+    private SocialUserDto getSocialInfo(final String providerToken, final UserLoginDto userLoginDto) {
         if (userLoginDto.provider().toString().equals("KAKAO")){
-            KakaoTokenDto kakaoTokenDto = kakaoService.getSocialToken(userLoginDto.code());
-            System.out.println("kakaoTokenDto.accessToken() = " + kakaoTokenDto.accessToken());
-            return kakaoService.getSocialUserInfo(kakaoTokenDto.accessToken());
+//            KakaoTokenDto kakaoTokenDto = kakaoService.getSocialToken(userLoginDto.code());
+//            System.out.println("kakaoTokenDto.accessToken() = " + kakaoTokenDto.accessToken());
+            return kakaoService.getSocialUserInfo(providerToken);
         } else if (userLoginDto.provider().toString().equals("GOOGLE")){
-            GoogleTokenDto googleTokenDto = googleService.getSocialToken(userLoginDto.code());
-            System.out.println("googleTokenDto.accessToken() = " + googleTokenDto.accessToken());
-            return googleService.getSocialUserInfo(googleTokenDto.accessToken());
+//            GoogleTokenDto googleTokenDto = googleService.getSocialToken(userLoginDto.code());
+//            System.out.println("googleTokenDto.accessToken() = " + googleTokenDto.accessToken());
+            return googleService.getSocialUserInfo(providerToken);
         } else {
             throw new BusinessException(AuthErrorCode.INVALID_PROVIDER);
         }
