@@ -10,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.wefresh.wefresh_server.auth.dto.SocialUserDto;
 import org.wefresh.wefresh_server.common.auth.constant.AuthConstant;
 import org.wefresh.wefresh_server.external.service.google.GoogleInfoClient;
+import org.wefresh.wefresh_server.external.service.google.GoogleRevokeClient;
 import org.wefresh.wefresh_server.external.service.google.GoogleTokenClient;
 import org.wefresh.wefresh_server.external.service.google.dto.GoogleTokenDto;
 import org.wefresh.wefresh_server.external.service.google.dto.GoogleuserDto;
@@ -25,6 +26,7 @@ public class GoogleService {
 
     private final GoogleTokenClient googleTokenClient;
     private final GoogleInfoClient googleInfoClient;
+    private final GoogleRevokeClient googleRevokeClient;
 
     @Value("${oauth.google.client-id}")
     private String clientId;
@@ -53,6 +55,10 @@ public class GoogleService {
                 googleUserDto.email(),
                 googleUserDto.picture()
         );
+    }
+
+    public void revoke(final String accessToken) {
+        googleRevokeClient.revokeToken("token=" + accessToken);
     }
 }
 
