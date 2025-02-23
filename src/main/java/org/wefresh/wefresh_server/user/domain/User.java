@@ -42,4 +42,8 @@ public class User extends BaseTimeEntity {
         this.profileImg = profileImg;
         this.email = email;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }
