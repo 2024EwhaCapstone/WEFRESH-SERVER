@@ -23,6 +23,9 @@ public class KakaoService {
     @Value("${oauth.kakao.redirect-uri}")
     private String redirectUri;
 
+    @Value("${oauth.kakao.admin-key}")
+    private String adminKey;
+
     public KakaoTokenDto getSocialToken(
             final String code
     ) {
@@ -40,5 +43,13 @@ public class KakaoService {
                 kakaoUserDto.id().toString(),
                 kakaoUserDto.kakaoAccount().email(),
                 kakaoUserDto.kakaoAccount().profile().profileImageUrl());
+    }
+
+    public void unlinkKakaoUser(final String providerId) {
+        kakaoFeignClient.unlinkUser(
+                AuthConstant.GRANT_TYPE + adminKey,
+                AuthConstant.TARGET_ID_TYPE,
+                Long.valueOf(providerId)
+        );
     }
 }
