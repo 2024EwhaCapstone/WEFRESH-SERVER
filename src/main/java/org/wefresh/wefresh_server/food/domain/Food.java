@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.wefresh.wefresh_server.common.base.BaseTimeEntity;
 import org.wefresh.wefresh_server.user.domain.User;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Entity
@@ -26,7 +26,7 @@ public class Food extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    private LocalDateTime date;
+    private LocalDate date;
 
     private int count;
 
@@ -39,7 +39,7 @@ public class Food extends BaseTimeEntity {
     private User user;
 
     @Builder
-    public Food(User user, String name, String image, Category category, LocalDateTime date, int count, String memo, Double fresh) {
+    public Food(User user, String name, String image, Category category, LocalDate date, int count, String memo, Double fresh) {
         this.user = user;
         this.name = name;
         this.image = image;
