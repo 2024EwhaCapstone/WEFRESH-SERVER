@@ -10,7 +10,7 @@ import org.wefresh.wefresh_server.common.base.BaseTimeEntity;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Recipe extends BaseTimeEntity {
+public class Recipe extends BaseTimeEntity implements RecipeBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
