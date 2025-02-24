@@ -59,4 +59,12 @@ public class FoodController {
         return ResponseEntity.ok().body(ResponseDto.success());
     }
 
+    @DeleteMapping("foods/{foodId}")
+    public ResponseEntity<ResponseDto<Void>> deleteFood(
+            @UserId final Long userId,
+            @PathVariable final Long foodId
+    ) {
+        foodService.deleteFood(userId, foodId);
+        return ResponseEntity.ok().body(ResponseDto.success());
+    }
 }

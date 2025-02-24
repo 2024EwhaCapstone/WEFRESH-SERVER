@@ -13,6 +13,7 @@ import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
 import org.wefresh.wefresh_server.food.manager.FoodEditor;
+import org.wefresh.wefresh_server.food.manager.FoodRemover;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.food.manager.FoodSaver;
 import org.wefresh.wefresh_server.user.domain.User;
@@ -34,6 +35,7 @@ public class FoodService {
 
     static final String FOOD_S3_UPLOAD_FOLDER = "foods/";
     private final FoodEditor foodEditor;
+    private final FoodRemover foodRemover;
 
     public void registerFood(
             final Long userId,
@@ -123,6 +125,28 @@ public class FoodService {
 
         // 기존 이미지 삭제
         if (existingImageUrl != null && (newImageUrl != null || foodRegisterDto.image() == null)) {
+            try {
+                s3Service.deleteImage(existingImageUrl);
+            } catch (IOException e) {
+                System.err.println("기존 이미지 삭제 실패: " + e.getMessage());
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteFood(
+            final Long userId,
+            final Long foodId
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+        validateFoodOwner(user.getId(), food);
+
+        String existingImageUrl = food.getImage();
+
+        foodRemover.deleteById(food.getId());
+
+        if (existingImageUrl != null) {
             try {
                 s3Service.deleteImage(existingImageUrl);
             } catch (IOException e) {
