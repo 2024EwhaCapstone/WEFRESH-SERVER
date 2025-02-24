@@ -8,6 +8,8 @@ import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
+import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
+import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.food.manager.FoodSaver;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
@@ -23,6 +25,7 @@ public class FoodService {
     private final S3Service s3Service;
 
     private final FoodSaver foodSaver;
+    private final FoodRetriever foodRetriever;
     private final UserRetriever userRetriever;
 
     static final String FOOD_S3_UPLOAD_FOLDER = "foods/";
@@ -43,6 +46,13 @@ public class FoodService {
         }
 
         applicationContext.getBean(FoodService.class).saveFood(user, foodRegisterDto, imageUrl);
+    }
+
+    @Transactional(readOnly = true)
+    public FoodListsDto getExpiringFood(final Long userId) {
+        User user = userRetriever.findById(userId);
+
+        return FoodListsDto.from(foodRetriever.findExpiringByUserId(user.getId()));
     }
 
     @Transactional
