@@ -11,12 +11,14 @@ import org.wefresh.wefresh_server.bookmark.domain.Bookmark;
 import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsDto;
 import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkCreator;
+import org.wefresh.wefresh_server.bookmark.manager.BookmarkRemover;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkRetriever;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
 import org.wefresh.wefresh_server.common.exception.code.RecipeErrorCode;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
+import org.wefresh.wefresh_server.recipe.dto.response.RecipeDto;
 import org.wefresh.wefresh_server.recipe.manager.RecipeRetriever;
 import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
@@ -34,6 +36,7 @@ public class BookmarkService {
     private final RecipeRetriever recipeRetriever;
     private final TodayRecipeRetriever todayRecipeRetriever;
     private final BookmarkRetriever bookmarkRetriever;
+    private final BookmarkRemover bookmarkRemover;
 
     @Transactional
     public void createBookmark(
@@ -76,6 +79,37 @@ public class BookmarkService {
 
         Pageable pageable = PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt"));
         return BookmarkListsDto.from(bookmarkRetriever.findByUserId(user.getId(), pageable));
+    }
+
+    @Transactional(readOnly = true)
+    public RecipeDto getBookmark(
+            final Long userId,
+            final Long bookmarkId
+    ) {
+        User user = userRetriever.findById(userId);
+        Bookmark bookmark = bookmarkRetriever.findById(bookmarkId);
+
+        validateBookmarkOwner(user.getId(), bookmark);
+
+        if (bookmark.getRecipe() != null) {
+            return RecipeDto.from(bookmark.getRecipe());
+        } else if (bookmark.getTodayRecipe() != null) {
+            return RecipeDto.from(bookmark.getTodayRecipe());
+        } else {
+            throw new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void deleteBookmark(
+            final Long userId,
+            final Long bookmarkId
+    ) {
+        User user = userRetriever.findById(userId);
+        Bookmark bookmark = bookmarkRetriever.findById(bookmarkId);
+        validateBookmarkOwner(user.getId(), bookmark);
+
+        bookmarkRemover.deleteById(bookmark.getId());
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {
