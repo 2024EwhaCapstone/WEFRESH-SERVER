@@ -50,4 +50,13 @@ public class BookmarkController {
     ) {
         return ResponseEntity.ok().body(ResponseDto.success(bookmarkService.getBookmark(userId, bookmarkId)));
     }
+
+    @DeleteMapping("/bookmarks/{bookmarkId}")
+    public ResponseEntity<ResponseDto<Void>> deleteBookmark(
+            @UserId final Long userId,
+            @PathVariable final Long bookmarkId
+    ) {
+        bookmarkService.deleteBookmark(userId, bookmarkId);
+        return ResponseEntity.ok().body(ResponseDto.success());
+    }
 }

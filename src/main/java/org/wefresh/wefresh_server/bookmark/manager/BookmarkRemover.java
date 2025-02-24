@@ -10,7 +10,11 @@ public class BookmarkRemover {
 
     private final BookmarkRepository bookmarkRepository;
 
-    public void deleteByUserId(Long userId) {
+    public void deleteByUserId(final Long userId) {
         bookmarkRepository.deleteByUserId(userId);
+    }
+
+    public void deleteById(final Long id) {
+        bookmarkRepository.deleteById(id);
     }
 }

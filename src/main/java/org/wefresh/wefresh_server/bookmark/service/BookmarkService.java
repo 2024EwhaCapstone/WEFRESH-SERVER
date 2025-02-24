@@ -11,6 +11,7 @@ import org.wefresh.wefresh_server.bookmark.domain.Bookmark;
 import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsDto;
 import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkCreator;
+import org.wefresh.wefresh_server.bookmark.manager.BookmarkRemover;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkRetriever;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
@@ -35,6 +36,7 @@ public class BookmarkService {
     private final RecipeRetriever recipeRetriever;
     private final TodayRecipeRetriever todayRecipeRetriever;
     private final BookmarkRetriever bookmarkRetriever;
+    private final BookmarkRemover bookmarkRemover;
 
     @Transactional
     public void createBookmark(
@@ -96,6 +98,18 @@ public class BookmarkService {
         } else {
             throw new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND);
         }
+    }
+
+    @Transactional
+    public void deleteBookmark(
+            final Long userId,
+            final Long bookmarkId
+    ) {
+        User user = userRetriever.findById(userId);
+        Bookmark bookmark = bookmarkRetriever.findById(bookmarkId);
+        validateBookmarkOwner(user.getId(), bookmark);
+
+        bookmarkRemover.deleteById(bookmark.getId());
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {
