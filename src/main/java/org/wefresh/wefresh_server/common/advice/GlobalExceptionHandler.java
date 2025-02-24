@@ -30,13 +30,6 @@ public class GlobalExceptionHandler {
                 .body(ResponseDto.fail(e.getErrorCode()));
     }
 
-    @ExceptionHandler(value = {MethodArgumentNotValidException.class})
-    public ResponseEntity<ResponseDto<String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ResponseDto.validFail(Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage()));
-    }
-
     @ExceptionHandler(value = {MissingRequestHeaderException.class})
     public ResponseEntity<ResponseDto<BusinessErrorCode>> handleMissingHeaderException(MissingRequestHeaderException e) {
         return ResponseEntity
@@ -60,20 +53,20 @@ public class GlobalExceptionHandler {
 
     // 존재하지 않는 요청에 대한 예외
     @ExceptionHandler(value = {NoHandlerFoundException.class})
-    public ResponseEntity<BusinessErrorCode> handleNoPageFoundException(NoHandlerFoundException e) {
+    public ResponseEntity<ResponseDto<BusinessErrorCode>> handleNoPageFoundException(NoHandlerFoundException e) {
         log.warn("GlobalExceptionHandler catch NoHandlerFoundException : {}", BusinessErrorCode.NOT_FOUND_END_POINT.getMessage());
         return ResponseEntity
                 .status(BusinessErrorCode.NOT_FOUND_END_POINT.getHttpStatus())
-                .body(BusinessErrorCode.NOT_FOUND_END_POINT);
+                .body(ResponseDto.fail(BusinessErrorCode.NOT_FOUND_END_POINT));
     }
 
     // 잘못된 Method로 요청한 경우
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<BusinessErrorCode> handleNoPageFoundException(HttpRequestMethodNotSupportedException e) {
+    public ResponseEntity<ResponseDto<BusinessErrorCode>> handleNoPageFoundException(HttpRequestMethodNotSupportedException e) {
         log.warn("GlobalExceptionHandler catch NoHandlerFoundException : {}", BusinessErrorCode.NOT_FOUND_END_POINT.getMessage());
         return ResponseEntity
                 .status(BusinessErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
-                .body(BusinessErrorCode.METHOD_NOT_ALLOWED);
+                .body(ResponseDto.fail(BusinessErrorCode.METHOD_NOT_ALLOWED));
     }
 
     @ExceptionHandler(value = {
@@ -81,19 +74,19 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException.class,
             HttpMessageNotReadableException.class
     })
-    public ResponseEntity<BusinessErrorCode> handleValidationException(Exception e) {
+    public ResponseEntity<ResponseDto<BusinessErrorCode>> handleValidationException(Exception e) {
         log.warn("GlobalExceptionHandler catch MethodArgumentNotValidException : {}", e.getMessage());
         return ResponseEntity
                 .status(BusinessErrorCode.INVALID_ARGUMENTS.getHttpStatus())
-                .body(BusinessErrorCode.INVALID_ARGUMENTS);
+                .body(ResponseDto.fail(BusinessErrorCode.INVALID_ARGUMENTS));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<BusinessErrorCode> handleMaxSizeException(MaxUploadSizeExceededException e) {
+    public ResponseEntity<ResponseDto<BusinessErrorCode>> handleMaxSizeException(MaxUploadSizeExceededException e) {
         log.warn("GlobalExceptionHandler catch MaxUploadSizeExceededException : {}", e.getMessage());
         return ResponseEntity
                 .status(BusinessErrorCode.PAYLOAD_TOO_LARGE.getHttpStatus())
-                .body(BusinessErrorCode.PAYLOAD_TOO_LARGE);
+                .body(ResponseDto.fail(BusinessErrorCode.PAYLOAD_TOO_LARGE));
     }
 
     @ExceptionHandler(value = {Exception.class})
