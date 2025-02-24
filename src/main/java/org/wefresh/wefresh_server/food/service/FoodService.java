@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
+import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
@@ -53,6 +54,21 @@ public class FoodService {
         User user = userRetriever.findById(userId);
 
         return FoodListsDto.from(foodRetriever.findExpiringByUserId(user.getId()));
+    }
+
+    @Transactional(readOnly = true)
+    public FoodListsDto getFoods(
+            final Long userId,
+            String categoryName,
+            String name
+    ) {
+        User user = userRetriever.findById(userId);
+
+        Category category = null;
+        if (categoryName != null) {
+            category = Category.fromString(categoryName);
+        }
+        return FoodListsDto.from(foodRetriever.findBySearch(user.getId(), category, name));
     }
 
     @Transactional

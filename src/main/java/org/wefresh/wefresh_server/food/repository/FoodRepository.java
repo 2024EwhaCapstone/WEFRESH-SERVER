@@ -3,10 +3,11 @@ package org.wefresh.wefresh_server.food.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.wefresh.wefresh_server.food.domain.Food;
+import org.wefresh.wefresh_server.food.repository.custom.FoodRepositoryCustom;
 
 import java.util.List;
 
-public interface FoodRepository extends JpaRepository<Food, Long> {
+public interface FoodRepository extends JpaRepository<Food, Long>, FoodRepositoryCustom {
 
     void deleteByUserId(Long id);
 
