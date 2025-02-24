@@ -5,10 +5,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
+import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
 import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
+import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.food.manager.FoodSaver;
@@ -71,6 +73,19 @@ public class FoodService {
         return FoodListsDto.from(foodRetriever.findBySearch(user.getId(), category, name));
     }
 
+    @Transactional(readOnly = true)
+    public FoodDto getFood(
+            final Long userId,
+            final Long foodId
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+
+        validateFoodOwner(user.getId(), food);
+
+        return FoodDto.from(food);
+    }
+
     @Transactional
     protected void saveFood(User user, FoodRegisterDto foodRegisterDto, String imageUrl) {
         try {
@@ -105,6 +120,12 @@ public class FoodService {
             } catch (RuntimeException e) {
                 System.err.println("S3 이미지 삭제 중 알 수 없는 오류 발생: " + e.getMessage());
             }
+        }
+    }
+
+    private void validateFoodOwner(Long userId, Food food) {
+        if (!food.getUser().getId().equals(userId)) {
+            throw new BusinessException(FoodErrorCode.FOOD_FORBIDDEN);
         }
     }
 }

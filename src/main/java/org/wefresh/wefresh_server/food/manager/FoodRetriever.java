@@ -2,6 +2,8 @@ package org.wefresh.wefresh_server.food.manager;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.wefresh.wefresh_server.common.exception.BusinessException;
+import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.repository.FoodRepository;
@@ -24,5 +26,10 @@ public class FoodRetriever {
             final String name
     ) {
         return foodRepository.findBySearch(userId, category, name);
+    }
+
+    public Food findById(final Long foodId) {
+        return foodRepository.findById(foodId)
+                .orElseThrow(() -> new BusinessException(FoodErrorCode.NOT_FOUND_FOOD));
     }
 }
