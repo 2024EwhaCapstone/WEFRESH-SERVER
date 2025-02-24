@@ -49,4 +49,14 @@ public class FoodController {
         return ResponseEntity.ok().body(ResponseDto.success(foodService.getFood(userId, foodId)));
     }
 
+    @PutMapping("foods/{foodId}")
+    public ResponseEntity<ResponseDto<Void>> updateFood(
+            @UserId final Long userId,
+            @PathVariable final Long foodId,
+            @ModelAttribute final FoodRegisterDto foodRegisterDto
+    ) {
+        foodService.updateFood(userId, foodId, foodRegisterDto);
+        return ResponseEntity.ok().body(ResponseDto.success());
+    }
+
 }
