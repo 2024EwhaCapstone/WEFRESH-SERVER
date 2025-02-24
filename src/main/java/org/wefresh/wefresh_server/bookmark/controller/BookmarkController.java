@@ -10,6 +10,7 @@ import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.service.BookmarkService;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
+import org.wefresh.wefresh_server.recipe.dto.response.RecipeDto;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,5 +41,13 @@ public class BookmarkController {
             @UserId final Long userId
     ) {
         return ResponseEntity.ok().body(ResponseDto.success(bookmarkService.getSixBookmarks(userId)));
+    }
+
+    @GetMapping("/bookmarks/{bookmarkId}")
+    public ResponseEntity<ResponseDto<RecipeDto>> getBookmark(
+            @UserId final Long userId,
+            @PathVariable final Long bookmarkId
+    ) {
+        return ResponseEntity.ok().body(ResponseDto.success(bookmarkService.getBookmark(userId, bookmarkId)));
     }
 }

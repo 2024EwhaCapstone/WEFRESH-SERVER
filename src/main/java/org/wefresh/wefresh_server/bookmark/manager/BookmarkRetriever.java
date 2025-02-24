@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.wefresh.wefresh_server.bookmark.domain.Bookmark;
 import org.wefresh.wefresh_server.bookmark.repository.BookmarkRepository;
+import org.wefresh.wefresh_server.common.exception.BusinessException;
+import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
 
 import java.util.List;
 
@@ -27,5 +29,10 @@ public class BookmarkRetriever {
             final Pageable pageable
     ) {
         return bookmarkRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+    }
+
+    public Bookmark findById(final Long bookmarkId) {
+        return bookmarkRepository.findById(bookmarkId)
+                .orElseThrow(() -> new BusinessException(BookmarkErrorCode.BOOKMARK_NOT_FOUND));
     }
 }

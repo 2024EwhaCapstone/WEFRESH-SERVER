@@ -17,6 +17,7 @@ import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
 import org.wefresh.wefresh_server.common.exception.code.RecipeErrorCode;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
+import org.wefresh.wefresh_server.recipe.dto.response.RecipeDto;
 import org.wefresh.wefresh_server.recipe.manager.RecipeRetriever;
 import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
@@ -76,6 +77,25 @@ public class BookmarkService {
 
         Pageable pageable = PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt"));
         return BookmarkListsDto.from(bookmarkRetriever.findByUserId(user.getId(), pageable));
+    }
+
+    @Transactional(readOnly = true)
+    public RecipeDto getBookmark(
+            final Long userId,
+            final Long bookmarkId
+    ) {
+        User user = userRetriever.findById(userId);
+        Bookmark bookmark = bookmarkRetriever.findById(bookmarkId);
+
+        validateBookmarkOwner(user.getId(), bookmark);
+
+        if (bookmark.getRecipe() != null) {
+            return RecipeDto.from(bookmark.getRecipe());
+        } else if (bookmark.getTodayRecipe() != null) {
+            return RecipeDto.from(bookmark.getTodayRecipe());
+        } else {
+            throw new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND);
+        }
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {
