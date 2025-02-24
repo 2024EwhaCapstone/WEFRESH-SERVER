@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsDto;
+import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.service.BookmarkService;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
@@ -27,7 +27,7 @@ public class BookmarkController {
     }
 
     @GetMapping("/bookmarks")
-    public ResponseEntity<ResponseDto<BookmarkListsDto>> getBookmarks(
+    public ResponseEntity<ResponseDto<BookmarkListsPageDto>> getBookmarks(
             @UserId final Long userId,
             @PageableDefault(page = 0, size = 15) Pageable pageable
     ) {

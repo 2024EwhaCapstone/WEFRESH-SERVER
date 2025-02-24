@@ -7,14 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.bookmark.domain.Bookmark;
-import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsDto;
+import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkCreator;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkRetriever;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
-import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.common.exception.code.RecipeErrorCode;
-import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.recipe.manager.RecipeRetriever;
@@ -22,8 +20,6 @@ import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +54,7 @@ public class BookmarkService {
     }
 
     @Transactional(readOnly = true)
-    public BookmarkListsDto getBookmarks(
+    public BookmarkListsPageDto getBookmarks(
             final Long userId,
             Pageable pageable
     ) {
@@ -67,7 +63,7 @@ public class BookmarkService {
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<Bookmark> bookmarks = bookmarkRetriever.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
 
-        return BookmarkListsDto.from(bookmarks);
+        return BookmarkListsPageDto.from(bookmarks);
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {

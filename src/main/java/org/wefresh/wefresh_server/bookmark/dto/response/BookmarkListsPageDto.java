@@ -7,12 +7,12 @@ import org.wefresh.wefresh_server.common.exception.code.RecipeErrorCode;
 
 import java.util.List;
 
-public record BookmarkListsDto(
+public record BookmarkListsPageDto(
         List<BookmarkListDto> bookmarks,
         PaginationDto pagination
 ) {
-    public static BookmarkListsDto from (Page<Bookmark> bookmarks) {
-        return new BookmarkListsDto(
+    public static BookmarkListsPageDto from (Page<Bookmark> bookmarks) {
+        return new BookmarkListsPageDto(
                 bookmarks.stream()
                         .map(BookmarkListDto::from)
                         .toList(),
