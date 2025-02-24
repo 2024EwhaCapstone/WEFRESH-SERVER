@@ -6,12 +6,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.wefresh.wefresh_server.common.base.BaseTimeEntity;
+import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.user.domain.User;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TodayRecipe extends BaseTimeEntity {
+public class TodayRecipe extends BaseTimeEntity implements RecipeBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
