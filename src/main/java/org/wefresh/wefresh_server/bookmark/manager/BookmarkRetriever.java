@@ -15,8 +15,11 @@ public class BookmarkRetriever {
 
     private final BookmarkRepository bookmarkRepository;
 
-    public List<Bookmark> findByUserId(final Long userId) {
-        return bookmarkRepository.findByUserId(userId);
+    public List<Bookmark> findByUserId(
+            final Long userId,
+            Pageable pageable
+    ) {
+        return bookmarkRepository.findByUserId(userId, pageable);
     }
 
     public Page<Bookmark> findByUserIdOrderByCreatedAtDesc(

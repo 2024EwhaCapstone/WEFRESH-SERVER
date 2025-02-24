@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.bookmark.domain.Bookmark;
+import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsDto;
 import org.wefresh.wefresh_server.bookmark.dto.response.BookmarkListsPageDto;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkCreator;
 import org.wefresh.wefresh_server.bookmark.manager.BookmarkRetriever;
@@ -20,6 +22,8 @@ import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +68,14 @@ public class BookmarkService {
         Page<Bookmark> bookmarks = bookmarkRetriever.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
 
         return BookmarkListsPageDto.from(bookmarks);
+    }
+
+    @Transactional(readOnly = true)
+    public BookmarkListsDto getSixBookmarks(final Long userId) {
+        User user = userRetriever.findById(userId);
+
+        Pageable pageable = PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return BookmarkListsDto.from(bookmarkRetriever.findByUserId(user.getId(), pageable));
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {
