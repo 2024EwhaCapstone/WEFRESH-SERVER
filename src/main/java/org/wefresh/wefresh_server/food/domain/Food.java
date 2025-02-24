@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import org.wefresh.wefresh_server.common.base.BaseTimeEntity;
 import org.wefresh.wefresh_server.user.domain.User;
 
@@ -48,5 +49,14 @@ public class Food extends BaseTimeEntity {
         this.count = count;
         this.memo = memo;
         this.fresh = fresh;
+    }
+
+    public void updateFood(String image, String name, Category category, LocalDate date, int count, String memo) {
+        this.image = image;
+        this.name = name;
+        this.category = category;
+        this.date = date;
+        this.count = count;
+        this.memo = memo;
     }
 }

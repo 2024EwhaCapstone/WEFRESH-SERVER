@@ -5,11 +5,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
+import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
 import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
+import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
+import org.wefresh.wefresh_server.food.manager.FoodEditor;
+import org.wefresh.wefresh_server.food.manager.FoodRemover;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.food.manager.FoodSaver;
 import org.wefresh.wefresh_server.user.domain.User;
@@ -30,6 +34,8 @@ public class FoodService {
     private final UserRetriever userRetriever;
 
     static final String FOOD_S3_UPLOAD_FOLDER = "foods/";
+    private final FoodEditor foodEditor;
+    private final FoodRemover foodRemover;
 
     public void registerFood(
             final Long userId,
@@ -71,6 +77,84 @@ public class FoodService {
         return FoodListsDto.from(foodRetriever.findBySearch(user.getId(), category, name));
     }
 
+    @Transactional(readOnly = true)
+    public FoodDto getFood(
+            final Long userId,
+            final Long foodId
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+
+        validateFoodOwner(user.getId(), food);
+
+        return FoodDto.from(food);
+    }
+
+    @Transactional
+    public void updateFood(
+            final Long userId,
+            final Long foodId,
+            final FoodRegisterDto foodRegisterDto
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+        validateFoodOwner(user.getId(), food);
+
+        String existingImageUrl = food.getImage();
+        String newImageUrl = null;
+
+        // 새로운 이미지가 있으면 업로드
+        if (foodRegisterDto.image() != null) {
+            try {
+                newImageUrl = s3Service.uploadImage(FOOD_S3_UPLOAD_FOLDER, foodRegisterDto.image());
+            } catch (IOException e) {
+                throw new RuntimeException("새 이미지 업로드 실패: " + e.getMessage());
+            }
+        }
+
+        // 음식 정보 업데이트 (새 이미지가 없으면 기존 이미지 제거)
+        foodEditor.updateFood(
+                food,
+                newImageUrl,
+                foodRegisterDto.name(),
+                foodRegisterDto.getCategoryEnum(),
+                foodRegisterDto.date(),
+                foodRegisterDto.count(),
+                foodRegisterDto.memo()
+        );
+
+        // 기존 이미지 삭제
+        if (existingImageUrl != null && (newImageUrl != null || foodRegisterDto.image() == null)) {
+            try {
+                s3Service.deleteImage(existingImageUrl);
+            } catch (IOException e) {
+                System.err.println("기존 이미지 삭제 실패: " + e.getMessage());
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteFood(
+            final Long userId,
+            final Long foodId
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+        validateFoodOwner(user.getId(), food);
+
+        String existingImageUrl = food.getImage();
+
+        foodRemover.deleteById(food.getId());
+
+        if (existingImageUrl != null) {
+            try {
+                s3Service.deleteImage(existingImageUrl);
+            } catch (IOException e) {
+                System.err.println("기존 이미지 삭제 실패: " + e.getMessage());
+            }
+        }
+    }
+
     @Transactional
     protected void saveFood(User user, FoodRegisterDto foodRegisterDto, String imageUrl) {
         try {
@@ -105,6 +189,12 @@ public class FoodService {
             } catch (RuntimeException e) {
                 System.err.println("S3 이미지 삭제 중 알 수 없는 오류 발생: " + e.getMessage());
             }
+        }
+    }
+
+    private void validateFoodOwner(Long userId, Food food) {
+        if (!food.getUser().getId().equals(userId)) {
+            throw new BusinessException(FoodErrorCode.FOOD_FORBIDDEN);
         }
     }
 }

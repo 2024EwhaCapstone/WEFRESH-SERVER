@@ -13,4 +13,8 @@ public class FoodRemover {
     public void deleteByUserId(final Long id) {
         foodRepository.deleteByUserId(id);
     }
+
+    public void deleteById(final Long id) {
+        foodRepository.deleteById(id);
+    }
 }
