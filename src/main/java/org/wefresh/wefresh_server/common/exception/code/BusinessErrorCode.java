@@ -12,6 +12,7 @@ public enum BusinessErrorCode implements DefaultErrorCode {
     MISSING_REQUIRED_HEADER(HttpStatus.BAD_REQUEST,"필수 헤더가 누락되었습니다."),
     MISSING_REQUIRED_PARAMETER(HttpStatus.BAD_REQUEST,"필수 파라미터가 누락되었습니다."),
     MISSING_REQUIRED_COOKIE(HttpStatus.BAD_REQUEST, "필수 쿠키가 누락되었습니다."),
+    PAYLOAD_TOO_LARGE(HttpStatus.BAD_REQUEST,"최대 업로드 크기를 초과했습니다."),
     // 500 INTERNAL_SEVER_ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
     ;
