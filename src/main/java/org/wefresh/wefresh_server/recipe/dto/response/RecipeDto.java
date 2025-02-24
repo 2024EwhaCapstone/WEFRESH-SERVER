@@ -38,9 +38,9 @@ public record RecipeDto(
             return ingredientList;
         }
 
-        String[] items = ingredients.split(", ");
+        String[] items = ingredients.split(",");
         for (String item : items) {
-            ingredientList.add(IngredientDto.from(item));
+            ingredientList.add(IngredientDto.from(item.trim()));
         }
         return ingredientList;
     }
@@ -54,7 +54,7 @@ public record RecipeDto(
             if (parts.length == 2) {
                 return new IngredientDto(parts[0], parts[1]);
             }
-            throw new BusinessException(GptErrorCode.GPT_PROCESSING_ERROR);
+            return new IngredientDto(ingredient, "-");
         }
     }
 }
