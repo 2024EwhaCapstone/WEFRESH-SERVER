@@ -5,12 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.BusinessErrorCode;
-import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.recipe.dto.response.RecipeDto;
 import org.wefresh.wefresh_server.recipe.manager.RecipeRetriever;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
-import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
 @Service
