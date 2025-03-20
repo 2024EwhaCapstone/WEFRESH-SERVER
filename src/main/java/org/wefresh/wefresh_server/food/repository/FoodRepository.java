@@ -18,4 +18,6 @@ public interface FoodRepository extends JpaRepository<Food, Long>, FoodRepositor
       LIMIT 4
       """)
     List<Food> findExpiringByUserId(Long userId);
+
+    List<Food> findByIdIn(List<Long> ids);
 }

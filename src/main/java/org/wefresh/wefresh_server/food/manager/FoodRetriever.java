@@ -32,4 +32,8 @@ public class FoodRetriever {
         return foodRepository.findById(foodId)
                 .orElseThrow(() -> new BusinessException(FoodErrorCode.NOT_FOUND_FOOD));
     }
+
+    public List<Food> findByIdIn(List<Long> ids) {
+        return foodRepository.findByIdIn(ids);
+    }
 }
