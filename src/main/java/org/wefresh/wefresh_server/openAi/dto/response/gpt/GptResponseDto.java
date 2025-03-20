@@ -1,4 +1,4 @@
-package org.wefresh.wefresh_server.openAi.dto.response;
+package org.wefresh.wefresh_server.openAi.dto.response.gpt;
 
 import org.wefresh.wefresh_server.openAi.dto.MessageDto;
 
