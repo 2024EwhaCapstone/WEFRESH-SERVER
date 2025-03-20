@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.RecommendRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.TodayRecipesDto;
 import org.wefresh.wefresh_server.openAi.service.OpenAiService;
 
 import java.util.List;
@@ -24,5 +25,12 @@ public class OpenAiController {
             @RequestParam final List<Long> foodIds
     ) {
         return ResponseEntity.ok().body(ResponseDto.success(openAiService.getRecipe(userId, foodIds)));
+    }
+
+    @GetMapping("/recipes/today")
+    public ResponseEntity<ResponseDto<TodayRecipesDto>> getTodayRecipes(
+            @UserId final Long userId
+    ) {
+        return ResponseEntity.ok().body(ResponseDto.success(openAiService.getTodayRecipes(userId)));
     }
 }

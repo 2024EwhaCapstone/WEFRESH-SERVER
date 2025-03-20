@@ -11,9 +11,12 @@ import org.wefresh.wefresh_server.openAi.dto.request.GptRequestDto;
 import org.wefresh.wefresh_server.openAi.dto.response.GptRecipeResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.GptResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.RecommendRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.TodayRecipesDto;
 import org.wefresh.wefresh_server.openAi.util.JsonUtil;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.manager.RecipeSaver;
+import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
+import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeSaver;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
@@ -33,25 +36,56 @@ public class OpenAiService {
     private final UserRetriever userRetriever;
     private final FoodRetriever foodRetriever;
     private final RecipeSaver recipeSaver;
+    private final TodayRecipeSaver todayRecipeSaver;
 
     @Transactional
-    public RecommendRecipesDto getRecipe(
-            final Long userId,
-            final List<Long> foodIds
-    ) {
+    public RecommendRecipesDto getRecipe(final Long userId, final List<Long> foodIds) {
         User user = userRetriever.findById(userId);
         List<Food> foods = foodRetriever.findByIdIn(foodIds);
+        return saveAndReturnRecommendRecipes(foods);
+    }
 
-        System.out.println("foods = " + foods);
+    @Transactional
+    public TodayRecipesDto getTodayRecipes(final Long userId) {
+        List<Food> randomFoods = foodRetriever.findRandomFoods(userId, 3);
+        return saveAndReturnTodayRecipes(randomFoods);
+    }
 
-        String ingredients = foods.stream()
-                .map(Food::getName)
-                .collect(Collectors.joining(", "));
+    private RecommendRecipesDto saveAndReturnRecommendRecipes(List<Food> foods) {
+        List<Recipe> savedRecipes = saveRecipes(foods);
+        return RecommendRecipesDto.from(savedRecipes, foods);
+    }
 
-        System.out.println("ingredients = " + ingredients);
+    private TodayRecipesDto saveAndReturnTodayRecipes(List<Food> foods) {
+        List<TodayRecipe> savedRecipes = saveTodayRecipes(foods);
+        return TodayRecipesDto.from(savedRecipes);
+    }
 
-        // GPT 프롬프트 (JSON 형식 요청)
-        String prompt = String.format(
+    private List<Recipe> saveRecipes(List<Food> foods) {
+        GptRecipeResponseDto gptRecipes = fetchGptRecipes(foods);
+        List<Recipe> recipes = convertToRecipes(gptRecipes);
+        return recipeSaver.saveAll(recipes);
+    }
+
+    private List<TodayRecipe> saveTodayRecipes(List<Food> foods) {
+        GptRecipeResponseDto gptRecipes = fetchGptRecipes(foods);
+        List<TodayRecipe> todayRecipes = convertToTodayRecipes(gptRecipes);
+        return todayRecipeSaver.saveAll(todayRecipes);
+    }
+
+    private GptRecipeResponseDto fetchGptRecipes(List<Food> foods) {
+        String ingredients = foods.stream().map(Food::getName).collect(Collectors.joining(", "));
+        String prompt = generateRecipePrompt(ingredients);
+
+        GptRequestDto request = GptRequestDto.of(model, prompt);
+        GptResponseDto responseDto = restTemplate.postForObject(apiURL, request, GptResponseDto.class);
+        String jsonResponse = extractJson(responseDto.choices().get(0).message().content());
+
+        return JsonUtil.fromJson(jsonResponse, GptRecipeResponseDto.class);
+    }
+
+    private String generateRecipePrompt(String ingredients) {
+        return String.format(
                 """
                 너는 프로 요리사야.  
                 %s가 포함된 요리 3개를 JSON 형식으로 추천해줘. 
@@ -64,19 +98,11 @@ public class OpenAiService {
                   "recipes": [
                     {
                       "name": "요리 이름",
-                      "ingredients": [
-                        "연어 200g",
-                        "새우 200g",
-                        "감자 2알"
-                      ],
+                      "ingredients": ["연어 200g", "새우 200g", "감자 2알"],
                       "time": 30,
                       "calorie": 500,
                       "difficulty": 3,
-                      "steps": [
-                        "Step 1. 재료를 준비한다.",
-                        "Step 2. 연어를 열심히 볶는다.",
-                        "Step 3. 먹는다."
-                      ]
+                      "steps": ["Step 1. 재료를 준비한다.", "Step 2. 연어를 열심히 볶는다.", "Step 3. 먹는다."]
                     },
                     {
                       "name": "다른 요리",
@@ -89,44 +115,39 @@ public class OpenAiService {
                   ]
                 }
                 ```
-    
                 위 JSON 형식으로 **정확하게** 3개의 레시피 응답해줘.
                 모든 레시피에는 반드시 [%s]가 포함되어야 해.
                 JSON 외에 불필요한 문장은 절대 포함하지 마.
                 """, ingredients, ingredients);
+    }
 
-        System.out.println("prompt = " + prompt);
-
-        GptRequestDto request = GptRequestDto.of(model, prompt);
-        GptResponseDto responseDto = restTemplate.postForObject(apiURL, request, GptResponseDto.class);
-        String response = responseDto.choices().get(0).message().content();
-
-        String jsonResponse = extractJson(response);
-
-        System.out.println("jsonResponse = " + jsonResponse);
-
-        // JSON → DTO 변환
-        GptRecipeResponseDto gptRecipes = JsonUtil.fromJson(jsonResponse, GptRecipeResponseDto.class);
-
-        // DTO → Recipe 엔티티 변환 및 저장
-        List<Recipe> recipes = gptRecipes.recipes().stream()
+    private List<Recipe> convertToRecipes(GptRecipeResponseDto gptRecipes) {
+        return gptRecipes.recipes().stream()
                 .map(dto -> Recipe.builder()
                         .name(dto.name())
-                        .image("defaultImageURL") // GPT 응답에는 이미지가 없으므로 기본값 설정
+                        .image("defaultImageURL")
                         .time(dto.time())
                         .calorie(dto.calorie())
                         .difficulty(dto.difficulty())
-                        .likeCount(0) // 초기 좋아요 수는 0
-                        .ingredients(String.join(", ", dto.ingredients())) // List<String> → String 변환
-                        .recipe(String.join("\n", dto.steps())) // List<String> → String 변환
+                        .likeCount(0)
+                        .ingredients(String.join(", ", dto.ingredients()))
+                        .recipe(String.join("\n", dto.steps()))
                         .build())
                 .collect(Collectors.toList());
+    }
 
-        // DB 저장
-        List<Recipe> savedRecipes = recipeSaver.saveAll(recipes);
-
-        // RecommendRecipesDto 변환 및 반환
-        return RecommendRecipesDto.from(savedRecipes, foods);
+    private List<TodayRecipe> convertToTodayRecipes(GptRecipeResponseDto gptRecipes) {
+        return gptRecipes.recipes().stream()
+                .map(dto -> TodayRecipe.builder()
+                        .name(dto.name())
+                        .image("defaultImageURL")
+                        .time(dto.time())
+                        .calorie(dto.calorie())
+                        .difficulty(dto.difficulty())
+                        .ingredients(String.join(", ", dto.ingredients()))
+                        .recipe(String.join("\n", dto.steps()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private String extractJson(String response) {
@@ -136,5 +157,4 @@ public class OpenAiService {
         }
         throw new RuntimeException("JSON 형식을 찾을 수 없음");
     }
-
 }
