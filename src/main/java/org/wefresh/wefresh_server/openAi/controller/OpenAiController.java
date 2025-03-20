@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
-import org.wefresh.wefresh_server.openAi.dto.response.RecommendRecipesDto;
-import org.wefresh.wefresh_server.openAi.dto.response.TodayRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.RecommendRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.TodayRecipesDto;
 import org.wefresh.wefresh_server.openAi.service.OpenAiService;
 
 import java.util.List;
