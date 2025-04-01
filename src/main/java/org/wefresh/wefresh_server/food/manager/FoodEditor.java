@@ -30,4 +30,10 @@ public class FoodEditor {
                 memo
         );
     }
+
+    public void updateFreshness(
+            final Food food,
+            final String result) {
+        food.updateFreshness(result);
+    }
 }

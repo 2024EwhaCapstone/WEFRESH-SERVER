@@ -33,14 +33,15 @@ public class Food extends BaseTimeEntity {
 
     private String memo;
 
-    private Double fresh;
+    @Column(columnDefinition = "TEXT")
+    private String fresh;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @Builder
-    public Food(User user, String name, String image, Category category, LocalDate date, int count, String memo, Double fresh) {
+    public Food(User user, String name, String image, Category category, LocalDate date, int count, String memo, String fresh) {
         this.user = user;
         this.name = name;
         this.image = image;
@@ -58,5 +59,9 @@ public class Food extends BaseTimeEntity {
         this.date = date;
         this.count = count;
         this.memo = memo;
+    }
+
+    public void updateFreshness(String result) {
+        this.fresh = result;
     }
 }
