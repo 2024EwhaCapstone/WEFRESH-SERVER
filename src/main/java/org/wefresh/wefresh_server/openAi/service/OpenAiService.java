@@ -8,10 +8,10 @@ import org.springframework.web.client.RestTemplate;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.openAi.dto.request.GptRequestDto;
-import org.wefresh.wefresh_server.openAi.dto.response.GptRecipeResponseDto;
-import org.wefresh.wefresh_server.openAi.dto.response.GptResponseDto;
-import org.wefresh.wefresh_server.openAi.dto.response.RecommendRecipesDto;
-import org.wefresh.wefresh_server.openAi.dto.response.TodayRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.GptRecipeResponseDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.GptResponseDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.RecommendRecipesDto;
+import org.wefresh.wefresh_server.openAi.dto.response.gpt.TodayRecipesDto;
 import org.wefresh.wefresh_server.openAi.util.JsonUtil;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.manager.RecipeSaver;
@@ -37,6 +37,7 @@ public class OpenAiService {
     private final FoodRetriever foodRetriever;
     private final RecipeSaver recipeSaver;
     private final TodayRecipeSaver todayRecipeSaver;
+    private final DallEService dallEService;
 
     @Transactional
     public RecommendRecipesDto getRecipe(final Long userId, final List<Long> foodIds) {
@@ -125,7 +126,7 @@ public class OpenAiService {
         return gptRecipes.recipes().stream()
                 .map(dto -> Recipe.builder()
                         .name(dto.name())
-                        .image("defaultImageURL")
+                        .image(dallEService.generateAndUploadImage(dto.name()))
                         .time(dto.time())
                         .calorie(dto.calorie())
                         .difficulty(dto.difficulty())
@@ -140,7 +141,7 @@ public class OpenAiService {
         return gptRecipes.recipes().stream()
                 .map(dto -> TodayRecipe.builder()
                         .name(dto.name())
-                        .image("defaultImageURL")
+                        .image(dallEService.generateAndUploadImage(dto.name()))
                         .time(dto.time())
                         .calorie(dto.calorie())
                         .difficulty(dto.difficulty())

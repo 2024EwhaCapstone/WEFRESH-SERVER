@@ -18,6 +18,7 @@ public class Recipe extends BaseTimeEntity implements RecipeBase {
 
     private String name;
 
+    @Column(length = 2083)
     private String image;
 
     private int time;

@@ -1,6 +1,5 @@
-package org.wefresh.wefresh_server.openAi.dto.response;
+package org.wefresh.wefresh_server.openAi.dto.response.gpt;
 
-import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 
 import java.util.List;

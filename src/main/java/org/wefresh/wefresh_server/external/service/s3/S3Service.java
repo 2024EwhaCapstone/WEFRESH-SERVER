@@ -1,5 +1,6 @@
 package org.wefresh.wefresh_server.external.service.s3;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,7 +13,9 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -65,8 +68,47 @@ public class S3Service {
         return path.substring(1);
     }
 
+    public String uploadImageFromUrl(String directoryPath, String imageUrl, String fileName) throws IOException {
+        final String extension = getDalleFileExtension(imageUrl); // URL에서 확장자 추출
+        final String key = directoryPath + generateImageFileName(fileName, extension);
+        final S3Client s3Client = awsConfig.getS3Client();
+
+        byte[] imageBytes = downloadImage(imageUrl);
+
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType("image/" + extension)  // 올바른 MIME 타입 설정
+                .contentDisposition("inline")
+                .build();
+
+        s3Client.putObject(request, RequestBody.fromBytes(imageBytes));
+
+        return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(key)).toExternalForm();
+    }
+
+    private byte[] downloadImage(String imageUrl) throws IOException {
+        URL url = new URL(imageUrl);
+        URLConnection connection = url.openConnection();
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+        try (InputStream in = connection.getInputStream()) {
+            return IOUtils.toByteArray(in);
+        }
+    }
+
+    private String generateImageFileName(String fileName, String extension) {
+        return fileName.replaceAll("\\s+", "_") + "_" + UUID.randomUUID() + "." + extension;
+    }
+
     private String getFileExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
+
+    private String getDalleFileExtension(String imageUrl) {
+        if (imageUrl.contains(".png")) return "png";
+        if (imageUrl.contains(".jpg") || imageUrl.contains(".jpeg")) return "jpg";
+        if (imageUrl.contains(".webp")) return "webp";
+        return "png";  // 기본값 (DALL·E는 대부분 PNG)
     }
 
     private String generateImageFileName(String extension) {
