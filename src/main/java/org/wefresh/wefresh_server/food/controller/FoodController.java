@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
+import org.wefresh.wefresh_server.food.dto.request.FoodFreshRequestDto;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
 import org.wefresh.wefresh_server.food.service.FoodService;
+import org.wefresh.wefresh_server.openAi.util.JsonUtil;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,4 +69,26 @@ public class FoodController {
         foodService.deleteFood(userId, foodId);
         return ResponseEntity.ok().body(ResponseDto.success());
     }
+
+    @GetMapping("/foods/{foodId}/freshness")
+    public ResponseEntity<ResponseDto<Object>> getFreshnessJson(
+            @UserId final Long userId,
+            @PathVariable final Long foodId
+    ) {
+        String json = foodService.getFreshnessJson(userId, foodId);
+        Object data = JsonUtil.fromJson(json, Object.class);
+        return ResponseEntity.ok(ResponseDto.success(data));
+    }
+
+    @PostMapping("/foods/{foodId}/freshness")
+    public ResponseEntity<ResponseDto<Object>> updateFreshnessJson(
+            @UserId final Long userId,
+            @PathVariable final Long foodId,
+            @ModelAttribute final FoodFreshRequestDto foodFreshRequestDto
+            ) {
+        String json = foodService.updateFreshnessJson(userId, foodId, foodFreshRequestDto);
+        Object data = JsonUtil.fromJson(json, Object.class);
+        return ResponseEntity.ok(ResponseDto.success(data));
+    }
+
 }

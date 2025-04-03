@@ -8,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.openAi.dto.request.GptRequestDto;
+import org.wefresh.wefresh_server.openAi.dto.request.GptVisionRequestDto;
+import org.wefresh.wefresh_server.openAi.dto.response.GptVisionResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.gpt.GptRecipeResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.gpt.GptResponseDto;
 import org.wefresh.wefresh_server.openAi.dto.response.gpt.RecommendRecipesDto;
@@ -21,13 +23,17 @@ import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OpenAiService {
-    @Value("${openai.model}")
-    private String model;
+    @Value("${openai.models.text}")
+    private String textModel;
+
+    @Value("${openai.models.vision}")
+    private String visionModel;
 
     @Value("${openai.api-url}")
     private String apiURL;
@@ -78,7 +84,7 @@ public class OpenAiService {
         String ingredients = foods.stream().map(Food::getName).collect(Collectors.joining(", "));
         String prompt = generateRecipePrompt(ingredients);
 
-        GptRequestDto request = GptRequestDto.of(model, prompt);
+        GptRequestDto request = GptRequestDto.of(textModel, prompt);
         GptResponseDto responseDto = restTemplate.postForObject(apiURL, request, GptResponseDto.class);
         String jsonResponse = extractJson(responseDto.choices().get(0).message().content());
 
@@ -158,4 +164,36 @@ public class OpenAiService {
         }
         throw new RuntimeException("JSON 형식을 찾을 수 없음");
     }
+
+    // 신선도 분석
+    public String analyzeFreshness(String name, String imageUrl) {
+        String prompt = String.format("""
+        다음 사진은 "%s"라는 음식이야. 이 음식 사진을 보고 신선도 상태와 문제 항목들을 분석해줘.
+        
+        - 전체 신선도 상태는 "매우 신선함", "보통", "상함" 중 하나로 판단해줘.
+        - 문제가 의심되는 항목이 여러 개 보이면, 최대 2~3개 정도로 추려서 요약 제목(summary)과 설명(description)을 포함해줘.
+        - 응답은 반드시 아래 JSON 형식으로 해줘. 다른 문장, 인삿말, 코드블럭(```json)은 절대 포함하지 마.
+        
+        {
+          "freshness": "상함",
+          "reasons": [
+            {
+              "summary": "하얀 점 (곰팡이일 가능성)",
+              "description": "김치 표면에 하얀 점이 다수 보이며, 곰팡이일 가능성이 있음"
+            },
+            {
+              "summary": "색이 변하고 흐물거림",
+              "description": "김치가 전체적으로 흐물거리며 색이 탁해졌음"
+            }
+          ]
+        }
+        """, name);
+
+        GptVisionRequestDto request = GptVisionRequestDto.of(visionModel, imageUrl, prompt);
+        GptVisionResponseDto response = restTemplate.postForObject(apiURL, request, GptVisionResponseDto.class);
+
+        return extractJson(response.choices().get(0).message().content());
+    }
+
+
 }

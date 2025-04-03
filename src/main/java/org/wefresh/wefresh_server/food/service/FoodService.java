@@ -9,6 +9,7 @@ import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
 import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
+import org.wefresh.wefresh_server.food.dto.request.FoodFreshRequestDto;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
@@ -16,6 +17,9 @@ import org.wefresh.wefresh_server.food.manager.FoodEditor;
 import org.wefresh.wefresh_server.food.manager.FoodRemover;
 import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.food.manager.FoodSaver;
+import org.wefresh.wefresh_server.openAi.dto.response.FreshnessAnalysisDto;
+import org.wefresh.wefresh_server.openAi.dto.response.GptVisionResponseDto;
+import org.wefresh.wefresh_server.openAi.service.OpenAiService;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
@@ -32,6 +36,7 @@ public class FoodService {
     private final FoodSaver foodSaver;
     private final FoodRetriever foodRetriever;
     private final UserRetriever userRetriever;
+    private final OpenAiService openAiService;
 
     static final String FOOD_S3_UPLOAD_FOLDER = "foods/";
     private final FoodEditor foodEditor;
@@ -52,7 +57,10 @@ public class FoodService {
             throw new RuntimeException(e.getMessage());
         }
 
-        applicationContext.getBean(FoodService.class).saveFood(user, foodRegisterDto, imageUrl);
+        String freshnessJson = openAiService.analyzeFreshness(foodRegisterDto.name(), imageUrl);
+
+        applicationContext.getBean(FoodService.class)
+                .saveFood(user, foodRegisterDto, imageUrl, freshnessJson);
     }
 
     @Transactional(readOnly = true)
@@ -156,7 +164,7 @@ public class FoodService {
     }
 
     @Transactional
-    protected void saveFood(User user, FoodRegisterDto foodRegisterDto, String imageUrl) {
+    protected void saveFood(User user, FoodRegisterDto foodRegisterDto, String imageUrl, String freshJson) {
         try {
             Food food = Food.builder()
                     .name(foodRegisterDto.name())
@@ -165,6 +173,7 @@ public class FoodService {
                     .date(foodRegisterDto.date())
                     .count(foodRegisterDto.count())
                     .memo(foodRegisterDto.memo())
+                    .fresh(freshJson)
                     .user(user)
                     .build();
 
@@ -196,5 +205,43 @@ public class FoodService {
         if (!food.getUser().getId().equals(userId)) {
             throw new BusinessException(FoodErrorCode.FOOD_FORBIDDEN);
         }
+    }
+
+    public String getFreshnessJson(
+            final Long userId,
+            final Long foodId) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+
+        validateFoodOwner(user.getId(), food);
+
+        return food.getFresh();
+    }
+
+    @Transactional
+    public String updateFreshnessJson(
+            final Long userId,
+            final Long foodId,
+            final FoodFreshRequestDto foodFreshRequestDto
+    ) {
+        User user = userRetriever.findById(userId);
+        Food food = foodRetriever.findById(foodId);
+
+        validateFoodOwner(user.getId(), food);
+
+        String imageUrl = null;
+        try {
+            imageUrl = s3Service.uploadImage(FOOD_S3_UPLOAD_FOLDER, foodFreshRequestDto.image());
+        } catch (BusinessException e) {
+            throw new BusinessException(e.getErrorCode());
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+        String result = openAiService.analyzeFreshness(food.getName(), imageUrl);
+
+        foodEditor.updateFreshness(food, result);
+
+        return result;
     }
 }
