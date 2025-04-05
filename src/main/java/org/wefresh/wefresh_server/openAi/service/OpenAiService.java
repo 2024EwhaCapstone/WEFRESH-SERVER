@@ -18,10 +18,12 @@ import org.wefresh.wefresh_server.openAi.util.JsonUtil;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.manager.RecipeSaver;
 import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
+import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
 import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeSaver;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OpenAiService {
+    private final TodayRecipeRetriever todayRecipeRetriever;
     @Value("${openai.models.text}")
     private String textModel;
 
@@ -54,8 +57,16 @@ public class OpenAiService {
 
     @Transactional
     public TodayRecipesDto getTodayRecipes(final Long userId) {
+        User user = userRetriever.findById(userId);
+        LocalDate today = LocalDate.now();
+        List<TodayRecipe> existing = todayRecipeRetriever.findTodayRecipes(userId, today);
+
+        if (!existing.isEmpty()) {
+            return TodayRecipesDto.from(existing);
+        }
+
         List<Food> randomFoods = foodRetriever.findRandomFoods(userId, 3);
-        return saveAndReturnTodayRecipes(randomFoods);
+        return saveAndReturnTodayRecipes(randomFoods, today, user);
     }
 
     private RecommendRecipesDto saveAndReturnRecommendRecipes(List<Food> foods) {
@@ -63,8 +74,8 @@ public class OpenAiService {
         return RecommendRecipesDto.from(savedRecipes, foods);
     }
 
-    private TodayRecipesDto saveAndReturnTodayRecipes(List<Food> foods) {
-        List<TodayRecipe> savedRecipes = saveTodayRecipes(foods);
+    private TodayRecipesDto saveAndReturnTodayRecipes(List<Food> foods, LocalDate date, User user) {
+        List<TodayRecipe> savedRecipes = saveTodayRecipes(foods, date, user);
         return TodayRecipesDto.from(savedRecipes);
     }
 
@@ -74,9 +85,9 @@ public class OpenAiService {
         return recipeSaver.saveAll(recipes);
     }
 
-    private List<TodayRecipe> saveTodayRecipes(List<Food> foods) {
+    private List<TodayRecipe> saveTodayRecipes(List<Food> foods, LocalDate date, User user) {
         GptRecipeResponseDto gptRecipes = fetchGptRecipes(foods);
-        List<TodayRecipe> todayRecipes = convertToTodayRecipes(gptRecipes);
+        List<TodayRecipe> todayRecipes = convertToTodayRecipes(gptRecipes, date, user);
         return todayRecipeSaver.saveAll(todayRecipes);
     }
 
@@ -143,7 +154,7 @@ public class OpenAiService {
                 .collect(Collectors.toList());
     }
 
-    private List<TodayRecipe> convertToTodayRecipes(GptRecipeResponseDto gptRecipes) {
+    private List<TodayRecipe> convertToTodayRecipes(GptRecipeResponseDto gptRecipes, LocalDate date, User user) {
         return gptRecipes.recipes().stream()
                 .map(dto -> TodayRecipe.builder()
                         .name(dto.name())
@@ -151,6 +162,8 @@ public class OpenAiService {
                         .time(dto.time())
                         .calorie(dto.calorie())
                         .difficulty(dto.difficulty())
+                        .recommendedDate(date)
+                        .user(user)
                         .ingredients(String.join(", ", dto.ingredients()))
                         .recipe(String.join("\n", dto.steps()))
                         .build())

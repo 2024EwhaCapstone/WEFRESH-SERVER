@@ -9,6 +9,8 @@ import org.wefresh.wefresh_server.common.base.BaseTimeEntity;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.user.domain.User;
 
+import java.time.LocalDate;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,6 +33,8 @@ public class TodayRecipe extends BaseTimeEntity implements RecipeBase {
 
     private int difficulty;
 
+    private LocalDate recommendedDate;
+
     @Column(columnDefinition = "TEXT")
     private String ingredients;
 
@@ -42,7 +46,7 @@ public class TodayRecipe extends BaseTimeEntity implements RecipeBase {
     private User user;
 
     @Builder
-    public TodayRecipe(User user, String name, String image, int time, int calorie, int likeCount, int difficulty, String ingredients, String recipe) {
+    public TodayRecipe(User user, String name, String image, int time, int calorie, int likeCount, int difficulty, LocalDate recommendedDate, String ingredients, String recipe) {
         this.user = user;
         this.name = name;
         this.image = image;
@@ -50,6 +54,7 @@ public class TodayRecipe extends BaseTimeEntity implements RecipeBase {
         this.calorie = calorie;
         this.likeCount = likeCount;
         this.difficulty = difficulty;
+        this.recommendedDate = recommendedDate;
         this.ingredients = ingredients;
         this.recipe = recipe;
     }

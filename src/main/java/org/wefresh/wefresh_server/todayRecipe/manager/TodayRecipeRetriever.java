@@ -8,6 +8,9 @@ import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.todayRecipe.domain.TodayRecipe;
 import org.wefresh.wefresh_server.todayRecipe.repository.TodayRecipeRepository;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class TodayRecipeRetriever {
@@ -17,5 +20,9 @@ public class TodayRecipeRetriever {
     public TodayRecipe findById(final Long id) {
         return todayRecipeRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND));
+    }
+
+    public List<TodayRecipe> findTodayRecipes(Long userId, LocalDate date) {
+        return todayRecipeRepository.findAllByUserIdAndRecommendedDate(userId, date);
     }
 }
