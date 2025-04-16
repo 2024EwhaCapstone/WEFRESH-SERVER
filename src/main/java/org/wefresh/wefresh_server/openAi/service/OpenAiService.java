@@ -191,6 +191,7 @@ public class OpenAiService {
         - 전체 신선도 상태는 "매우 신선함", "보통", "상함" 중 하나로 판단해줘.
         - 문제가 의심되는 항목이 여러 개 보이면, 최대 2~3개 정도로 추려서 요약 제목(summary)과 설명(description)을 포함해줘.
         - 응답은 반드시 아래 JSON 형식으로 해줘. 다른 문장, 인삿말, 코드블럭(```json)은 절대 포함하지 마.
+        - reasons(summary, description) 항목은 무조건 최소 1개 있어야해.
         
         {
           "freshness": "상함",
