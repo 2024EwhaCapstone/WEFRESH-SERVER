@@ -1,6 +1,7 @@
 package org.wefresh.wefresh_server.openAi.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OpenAiService {
     private final TodayRecipeRetriever todayRecipeRetriever;
@@ -173,7 +175,10 @@ public class OpenAiService {
     private String extractJson(String response) {
         int jsonStart = response.indexOf("{");
         if (jsonStart != -1) {
-            return response.substring(jsonStart);
+            String json = response.substring(jsonStart);
+            log.info("🔍 GPT 응답 원본:\n{}", response); // 전체 응답 보기
+            log.info("📦 추출된 JSON 응답:\n{}", json); // JSON만 보기
+            return json;
         }
         throw new RuntimeException("JSON 형식을 찾을 수 없음");
     }
