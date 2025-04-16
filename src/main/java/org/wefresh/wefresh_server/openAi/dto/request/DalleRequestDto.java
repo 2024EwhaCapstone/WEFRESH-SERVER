@@ -11,7 +11,7 @@ public record DalleRequestDto(
                 "dall-e-2",
                 prompt,
                 1, // 한 개의 이미지 생성
-                "512x512"
+                "256x256"
         );
     }
 }
