@@ -10,6 +10,7 @@ import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.repository.FoodRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -40,5 +41,9 @@ public class FoodRetriever {
 
     public List<Food> findRandomFoods(Long userId, int count) {
         return foodRepository.findRandomFoodsByUser(userId, PageRequest.of(0, count));
+    }
+
+    public Optional<Food> findByUserIdAndName(Long userId, String name) {
+        return foodRepository.findByUserIdAndName(userId, name);
     }
 }

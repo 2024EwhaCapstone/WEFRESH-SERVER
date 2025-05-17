@@ -8,6 +8,7 @@ import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.repository.custom.FoodRepositoryCustom;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FoodRepository extends JpaRepository<Food, Long>, FoodRepositoryCustom {
 
@@ -25,5 +26,7 @@ public interface FoodRepository extends JpaRepository<Food, Long>, FoodRepositor
 
     @Query("SELECT f FROM Food f WHERE f.user.id = :userId ORDER BY FUNCTION('RAND')")
     List<Food> findRandomFoodsByUser(@Param("userId") Long userId, Pageable pageable);
+
+    Optional<Food> findByUserIdAndName(Long userId, String name);
 
 }

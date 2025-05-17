@@ -59,4 +59,13 @@ public class BookmarkController {
         bookmarkService.deleteBookmark(userId, bookmarkId);
         return ResponseEntity.ok().body(ResponseDto.success());
     }
+
+    @PostMapping("/bookmarks/{bookmarkId}/decrement")
+    public ResponseEntity<ResponseDto<Void>> decrementBookmarkIngredients(
+            @UserId final Long userId,
+            @PathVariable final Long bookmarkId
+    ) {
+        bookmarkService.decrementIngredients(userId, bookmarkId);
+        return ResponseEntity.ok().body(ResponseDto.success());
+    }
 }
