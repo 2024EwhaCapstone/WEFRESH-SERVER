@@ -64,4 +64,8 @@ public class Food extends BaseTimeEntity {
     public void updateFreshness(String result) {
         this.fresh = result;
     }
+
+    public void decrementCount() {
+        this.count = this.count - 1;
+    }
 }

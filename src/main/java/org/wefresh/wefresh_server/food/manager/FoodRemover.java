@@ -2,6 +2,7 @@ package org.wefresh.wefresh_server.food.manager;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.repository.FoodRepository;
 
 @Component
@@ -16,5 +17,9 @@ public class FoodRemover {
 
     public void deleteById(final Long id) {
         foodRepository.deleteById(id);
+    }
+
+    public void delete(final Food food) {
+        foodRepository.delete(food);
     }
 }

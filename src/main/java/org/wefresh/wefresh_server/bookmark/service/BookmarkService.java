@@ -1,6 +1,7 @@
 package org.wefresh.wefresh_server.bookmark.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,8 @@ import org.wefresh.wefresh_server.bookmark.manager.BookmarkRetriever;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.BookmarkErrorCode;
 import org.wefresh.wefresh_server.common.exception.code.RecipeErrorCode;
+import org.wefresh.wefresh_server.food.manager.FoodRemover;
+import org.wefresh.wefresh_server.food.manager.FoodRetriever;
 import org.wefresh.wefresh_server.recipe.domain.Recipe;
 import org.wefresh.wefresh_server.recipe.domain.RecipeBase;
 import org.wefresh.wefresh_server.recipe.dto.response.RecipeDto;
@@ -25,8 +28,10 @@ import org.wefresh.wefresh_server.todayRecipe.manager.TodayRecipeRetriever;
 import org.wefresh.wefresh_server.user.domain.User;
 import org.wefresh.wefresh_server.user.manager.UserRetriever;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
@@ -37,6 +42,8 @@ public class BookmarkService {
     private final TodayRecipeRetriever todayRecipeRetriever;
     private final BookmarkRetriever bookmarkRetriever;
     private final BookmarkRemover bookmarkRemover;
+    private final FoodRetriever foodRetriever;
+    private final FoodRemover foodRemover;
 
     @Transactional
     public void createBookmark(
@@ -110,6 +117,38 @@ public class BookmarkService {
         validateBookmarkOwner(user.getId(), bookmark);
 
         bookmarkRemover.deleteById(bookmark.getId());
+    }
+
+    @Transactional
+    public void decrementIngredients(Long userId, Long bookmarkId) {
+        User user = userRetriever.findById(userId);
+        Bookmark bookmark = bookmarkRetriever.findById(bookmarkId);
+        validateBookmarkOwner(user.getId(), bookmark);
+
+        RecipeBase recipe = (bookmark.getRecipe() != null)
+                ? bookmark.getRecipe()
+                : bookmark.getTodayRecipe();
+
+        String[] parts = recipe.getIngredients().split(",");
+        List<String> missing = new ArrayList<>();
+
+        for (String part : parts) {
+            String foodName = part.trim().split("\\s+")[0];
+            foodRetriever.findByUserIdAndName(user.getId(), foodName)
+                    .ifPresentOrElse(
+                            food -> {
+                                food.decrementCount();
+                                if (food.getCount() <= 0) {
+                                    foodRemover.delete(food);
+                                }
+                            },
+                            () -> missing.add(foodName)
+                    );
+        }
+
+        if (!missing.isEmpty()) {
+            log.warn("냉장고에 없어 차감하지 못한 재료: {}", missing);
+        }
     }
 
     private Bookmark buildBookmark(RecipeBase recipe, User user) {
