@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.wefresh.wefresh_server.common.auth.annotation.UserId;
 import org.wefresh.wefresh_server.common.dto.ResponseDto;
 import org.wefresh.wefresh_server.food.dto.request.FoodFreshRequestDto;
+import org.wefresh.wefresh_server.food.dto.request.FoodImageDto;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
@@ -25,6 +26,16 @@ public class FoodController {
     ) {
         foodService.registerFood(userId, foodRegisterDto);
         return ResponseEntity.ok().body(ResponseDto.success());
+    }
+
+    @PostMapping("/foods/image")
+    public ResponseEntity<ResponseDto<Object>> extractFoodImage(
+            @UserId final Long userId,
+            @ModelAttribute final FoodImageDto foodImageDto
+    ) {
+        String json = foodService.extractFoodImage(userId, foodImageDto);
+        Object data = JsonUtil.fromJson(json, Object.class);
+        return ResponseEntity.ok(ResponseDto.success(data));
     }
 
     @GetMapping("/foods/expiring")

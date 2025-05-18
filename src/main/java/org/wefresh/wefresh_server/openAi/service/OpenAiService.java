@@ -214,5 +214,29 @@ public class OpenAiService {
         return extractJson(response.choices().get(0).message().content());
     }
 
+    // 이름, 유통기한 추출
+    public String ExtractNameAndExpiration(String imageUrl) {
+        String prompt = """
+        이 사진에는 식품 제품이 담겨 있어.  
+        다음 기준에 따라 **식품명(name)**과 **유통기한(expirationDate)**을 추출해줘.
+
+        - 유통기한은 제품 표기에서 "유통기한", "소비기한", "EXP", "expiration date" 등으로 적혀있는 날짜야.
+        - 이름은 제품 포장에 적힌 **가장 큰 제목이나 중심 문구**야. 브랜드명보다 제품명을 우선 추출해줘.
+        - 찾지 못한 항목은 `"null"` 또는 `""`로 응답해줘. 오류 문구, 인삿말, 코드블럭(```json)은 절대 포함하지 마.
+        - 날짜는 가능한 한 `"YYYY년 MM월 DD일"` 형식으로 정제해줘 (예: 2025년 06월 10일).
+        - 응답은 아래 JSON 형식만 사용해. 반드시 key 순서 지켜줘.
+
+        {
+            "name": "삼양 불닭볶음면",
+            "expirationDate": "2025년 06월 10일"
+        }
+        """;
+
+        GptVisionRequestDto request = GptVisionRequestDto.of(visionModel, imageUrl, prompt);
+        GptVisionResponseDto response = restTemplate.postForObject(apiURL, request, GptVisionResponseDto.class);
+
+        return extractJson(response.choices().get(0).message().content());
+    }
+
 
 }

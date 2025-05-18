@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.wefresh.wefresh_server.common.dto.ResponseDto;
 import org.wefresh.wefresh_server.common.exception.BusinessException;
 import org.wefresh.wefresh_server.common.exception.code.FoodErrorCode;
 import org.wefresh.wefresh_server.external.service.s3.S3Service;
 import org.wefresh.wefresh_server.food.domain.Category;
 import org.wefresh.wefresh_server.food.domain.Food;
 import org.wefresh.wefresh_server.food.dto.request.FoodFreshRequestDto;
+import org.wefresh.wefresh_server.food.dto.request.FoodImageDto;
 import org.wefresh.wefresh_server.food.dto.request.FoodRegisterDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodDto;
 import org.wefresh.wefresh_server.food.dto.response.FoodListsDto;
@@ -243,5 +245,23 @@ public class FoodService {
         foodEditor.updateFreshness(food, result);
 
         return result;
+    }
+
+    @Transactional
+    public String extractFoodImage(
+            final Long userId,
+            final FoodImageDto foodImageDto
+    ) {
+
+        String imageUrl = null;
+        try {
+            imageUrl = s3Service.uploadImage(FOOD_S3_UPLOAD_FOLDER, foodImageDto.image());
+        } catch (BusinessException e) {
+            throw new BusinessException(e.getErrorCode());
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+        return openAiService.ExtractNameAndExpiration(imageUrl);
     }
 }
