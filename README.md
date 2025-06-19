@@ -24,23 +24,16 @@ COOKiT은 요리 초보자를 위한 AI 기반의 요리 지원 서비스로, �
 - 입력한 이미지 기반으로 식재료의 상한 부분을 탐지하고, GPT-4 Vision이 해당 이미지 분석을 통해 신선도 상태를 텍스트로 출력.
 ---
 ## 📱 How to build
-레포지토리 클론해서 프로젝트 돌리기
+① 아래 명령어로 프로젝트를 로컬 환경에 클론합니다.
 
-```bash
-git clone https://github.com/2024EwhaCapstone/WEFRESH-FRONT.git
-cd WEFRESH-FRONT
-npm install
-cd ios
-pod install
-cd ..
-npx react-native bundle \
-  --entry-file index.js \
-  --platform ios \
-  --dev false \
-  --bundle-output ios/main.jsbundle \
-  --assets-dest ios
-npx react-native run-ios
-```
+`git clone https://github.com/2024EwhaCapstone/WEFRESH-SERVER.git`
+
+② 클론한 폴더에서 build.gradle 파일을 코드 편집기(VS Code, IntelliJ 등)로 연 후, Build 버튼을 클릭하거나 ./gradlew build 명령어를 실행하여 필요한 라이브러리를 다운로드합니다.
+
+③ src/main/resources/application.yml 파일에 데이터베이스 접속 정보, API 키 등 필요한 설정 값을 입력합니다.
+
+④ Run 버튼을 클릭하거나 ./gradlew bootRun 명령어를 통해 프로젝트를 로컬 환경에서 실행합니다.
+
 
 ## 🛠️ How to test
 ####  iOS 시뮬레이터에서 `.app` 바이너리 실행 (빌드된 앱 테스트)
