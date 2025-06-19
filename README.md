@@ -48,4 +48,79 @@ open -a Simulator
 xcrun simctl install booted ~/app파일 주소
 xcrun simctl launch booted org.reactjs.native.yoonjinchoi.wefresh
 ```
-# WEFRESH-SERVER
+## 📁 Folder 구조
+<pre>
+
+<code>
+src/main/java/org/wefresh/wefresh_server
+├── auth                      # 인증/인가 관련 로직 (로그인, JWT 등)
+│   ├── controller
+│   ├── dto
+│   └── service
+│
+├── bookmark                  # 북마크 기능 (즐겨찾기, 저장 등)
+│   ├── controller
+│   ├── domain
+│   ├── dto.response
+│   ├── manager
+│   ├── repository
+│   └── service
+│
+├── common                    # 공통 모듈 (예외처리, 설정, 공통 응답 등)
+│   ├── advice
+│   ├── auth
+│   ├── base
+│   ├── config
+│   ├── controller
+│   ├── dto
+│   └── exception
+│
+├── external                  # 외부 API 연동 관련 설정
+│   ├── config
+│   └── service
+│
+├── food                      # 음식 관련 도메인 (식품 정보, 이미지 등)
+│   ├── controller
+│   ├── domain
+│   ├── dto
+│   ├── manager
+│   ├── repository
+│   └── service
+│
+├── openAi                    # OpenAI API 연동 (ChatGPT, Vision 등)
+│   ├── config
+│   ├── controller
+│   ├── dto
+│   ├── service
+│   └── util
+│
+├── recipe                    # 레시피 정보 제공 관련 로직
+│   ├── controller
+│   ├── domain
+│   ├── dto.response
+│   ├── manager
+│   ├── repository
+│   └── service
+│
+├── todayRecipe               # 오늘의 레시피 관련 로직
+│   ├── controller
+│   ├── domain
+│   ├── dto
+│   ├── manager
+│   ├── repository
+│   └── service
+│
+├── user                      # 사용자 정보 및 계정 관리
+│   ├── controller
+│   ├── domain
+│   ├── dto
+│   ├── manager
+│   ├── repository
+│   └── service
+│
+└── WefreshServerApplication # Spring Boot 메인 클래스 (실행 진입점)
+
+</code>
+
+</pre>
+
